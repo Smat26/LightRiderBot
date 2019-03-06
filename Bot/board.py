@@ -151,12 +151,12 @@ class Board:
             moves = moves + 1
             return self.leak_fix(enemy_id, my_id, players, enemy, future_cell, moves)
         elif len(enemy_legal_moves) == 0:
-            sys.stderr.write("Enemy trapped dies in %s moves" % str(moves))
+            sys.stderr.write("Enemy trapped dies in %s moves\n" % str(moves))
             sys.stderr.flush()
             return enemy, moves, True, future_cell
         else:
             # returns enemy position and moves to get there
-            sys.stderr.write("Enemy will be trapped for %s moves" % str(moves))
+            sys.stderr.write("Enemy will be trapped for %s moves\n" % str(moves))
             sys.stderr.flush()
             return enemy, moves, False, future_cell
 
