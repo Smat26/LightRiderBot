@@ -306,8 +306,18 @@ class Board:
     def smell_trap(self, enemy_id, my_id, players, enemy=None, future_cell=None, moves=0):
         return self.leak_fix(my_id, enemy_id, players, enemy=None, future_cell=None, moves=0)
 
-    def calculate_remaining_movable_area(self, player_id, players):
-        my_position = players[player_id]
+    def calculate_remaining_movable_area(self, player_id, players, direction):
+        if not (direction):
+            my_position = players[player_id]
+            row = my_position.row
+            col=my_position.col
+        else:
+            row, col = self.get_coordinate_given_direction(direction, players, player_id)
+
+        sys.stderr.write("row %s and col %s \n" % (str(row),str(col)))
+        sys.stderr.write("Direction %s \n" % str(direction))
+        sys.stderr.flush()
+
         up = 0
         down = 0
         right = 0
@@ -316,16 +326,16 @@ class Board:
 
         while not allFalse:
             allFalse = True
-            if self.is_legal(my_position.row + down + 1, my_position.col, player_id):
+            if self.is_legal(row + down + 1, col, player_id):
                 allFalse = False
                 down += 1
-            if self.is_legal(my_position.row, my_position.col + right + 1, player_id):
+            if self.is_legal(row, col + right + 1, player_id):
                 allFalse = False
                 right += 1
-            if self.is_legal(my_position.row - up - 1, my_position.col, player_id):
+            if self.is_legal(row - up - 1, col, player_id):
                 allFalse = False
                 up += 1
-            if self.is_legal(my_position.row, my_position.col - left - 1, player_id):
+            if self.is_legal(row, col - left - 1, player_id):
                 allFalse = False
                 left += 1
 
@@ -372,3 +382,19 @@ class Board:
             updated = True
 
         return cell, updated
+
+    def get_coordinate_given_direction(self, direction, players, player_id):
+        my_position = players[player_id]
+        row = my_position.row
+        col = my_position.col
+
+        if direction == 'up':
+            row += -1
+        elif direction == 'down':
+            row += 1
+        elif direction == 'right':
+            col += 1
+        elif direction == 'left':
+            col += -1
+
+        return row,col

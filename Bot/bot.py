@@ -66,7 +66,7 @@ class Bot:
             sys.stderr.write("Moves after %s are %s\n" % (direction, str(len(more_legal))))
             for more_moves in more_legal:
                 more_, more_direction = more_moves
-                direction_moves = self.game.field.calculate_remaining_movable_area(player_id=self.game.my_botid, players=self.game.players)
+                direction_moves = self.game.field.calculate_remaining_movable_area(player_id=self.game.my_botid, players=self.game.players, direction= more_direction)
                 good_move[direction] = good_move.get(direction, 0) + sum(direction_moves.values())
             if direction in good_move.keys():
                 sys.stderr.write("Direction: %s have score %s\n" % (direction, str(good_move[direction])))
@@ -77,7 +77,7 @@ class Bot:
             maxval = max(good_move.values())
             # If Trapped 
             if not maxval:
-                sys.stderr.write("MOVING: %s\n" % "PASSED")
+                sys.stderr.write("MOVING IF ALL ZERO (NO OPTION): %s\n" % "PASSED")
                 sys.stderr.flush()
                 self.game.issue_order_pass()
                 return
@@ -87,12 +87,12 @@ class Bot:
             sys.stderr.flush()
             self.game.issue_order(direction)
         elif trapped:
-            sys.stderr.write("MOVING: %s\n" % trapped[0])
+            sys.stderr.write("MOVING INSIDE TRAPPED: %s\n" % trapped[0])
             sys.stderr.flush()
             # Improvise trap comparison
             self.game.issue_order(trapped[0])
         else:
-            sys.stderr.write("MOVING: %s\n" % "PASSED")
+            sys.stderr.write("MOVING IF PASSED: %s\n" % "PASSED")
             sys.stderr.flush()
             self.game.issue_order_pass()
 
