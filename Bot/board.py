@@ -59,8 +59,7 @@ class Board:
 
     def is_legal(self, row, col, my_id):
         enemy_id = my_id ^ 1
-        return (self.in_bounds(row, col)) and (not BLOCKED in self.cell[row][col]) and (
-            not enemy_id in self.cell[row][col])
+        return (self.in_bounds(row, col)) and (not BLOCKED in self.cell[row][col]) and (not enemy_id in self.cell[row][col])
 
     def is_legal_tuple(self, loc):
         row, col = loc
@@ -285,52 +284,82 @@ class Board:
 
     def calculate_remaining_movable_area(self, player_id, players):
         my_position = players[player_id]
-        up, down, right, left = 0
+        up = 0
+        down = 0
+        right = 0
+        left = 0
         allFalse = False
 
         while not allFalse:
             allFalse = True
-            if self.is_legal(my_position.row + right + 1, my_position.col, player_id):
-                allFalse = False
-                right += 1
-            if self.is_legal(my_position.row, my_position.col + up + 1, player_id):
-                allFalse = False
-                up += 1
-            if self.is_legal(my_position.row - left - 1, my_position.col, player_id):
-                allFalse = False
-                left += 1
-            if self.is_legal(my_position.row, my_position.col - down - 1, player_id):
+            if self.is_legal(my_position.row + down + 1, my_position.col, player_id):
                 allFalse = False
                 down += 1
-        return [up, down, right, left]
+            if self.is_legal(my_position.row, my_position.col + right + 1, player_id):
+                allFalse = False
+                right += 1
+            if self.is_legal(my_position.row - up - 1, my_position.col, player_id):
+                allFalse = False
+                up += 1
+            if self.is_legal(my_position.row, my_position.col - left - 1, player_id):
+                allFalse = False
+                left += 1
 
-    def flood_fill(self, areaMap, x, y, my_id, order):
-        directions = []
-        # The recursive algorithm. Starting at x and y, changes any adjacent
+
+        sys.stderr.write('(' + str(up) + "," + str(down) + "," + str(right) + "," + str(left) + ") <-up, down, right, left\n")
+        sys.stderr.write("\n")
+        sys.stderr.flush()
+
+        return {'up':up, 'down':down, 'right':right, 'left':left}
+
+    def floodFill(self, world, x, y, my_id):
+        # Starting at x and y, changes any adjacent
         # characters that match oldChar to newChar.
-        worldWidth = self.width
-        worldHeight = self.height
+        worldWidth = self.width-1
+        worldHeight = self.height-1
+        theStack =[ (x, y) ]
+        direction=[]
 
-        if areaMap[x][y] != CHARTABLE[2][1]:
-            # Base case. If the current x, y character is not empty,
-            # then do nothing.
-            return directions
+        sys.stderr.write('(' + str(worldWidth) + "," + str(worldHeight) + ") <-width, height\n")
+        sys.stderr.write("\n")
+        sys.stderr.flush()
+        while len(theStack) > 0:
 
-        # Change the character at world[x][y]to newChar
-        areaMap[x][y] = CHARTABLE[my_id][1]
-        self.cell[x][y] = CHARTABLE[3][1]  # Putting a blocked symbol
-        directions.append(order)
+            sys.stderr.write('(' + str(x) + "," + str(y) + ") <-row,col\n")
+            sys.stderr.write('inside stack\n')
+            for rowz, colz in theStack:
+                sys.stderr.write('(' + str(rowz) + "," + str(colz)+ ")\n")
+            sys.stderr.write("\n")
+            sys.stderr.flush()
 
-        # Recursive calls. Make a recursive call as long as we are not on the
-        # boundary (which would cause an Index Error.)
-        if x > 0:  # left
-            self.floodFill(areaMap, x - 1, y, my_id, DIRS[3])
+            x, y = theStack.pop()
+            if self.in_bounds(x,y) and self.is_legal(x, y, my_id):
+                #up, down, right, left = self.calculate_remaining_movable_area(my_id, players)
+                #dir.append(max(up, down, right, left))
+                # Change the character at world[x][y] to newChar
+                world[x][y] = '+'
 
-        if y > 0:  # up
-            self.floodFill(areaMap, x, y - 1, my_id, DIRS[0])
+                if x > 0: # left
+                    theStack.append( (x-1, y) )
+                    direction.append('left')
 
-        if x < worldWidth - 1:  # right
-            self.floodFill(areaMap, x + 1, y, my_id, DIRS[1])
+                if y > 0: # up
+                    theStack.append( (x, y-1) )
+                    direction.append('up')
 
-        if y < worldHeight - 1:  # down
-            self.floodFill(areaMap, x, y + 1, my_id, DIRS[2])
+                if x < worldWidth-1: # right
+                    theStack.append( (x+1, y) )
+                    direction.append('right')
+
+                if y < worldHeight-1: # down
+                    theStack.append( (x, y+1) )
+                    direction.append('down')
+            else:
+                for rowz in world:
+                    sys.stderr.write("\n")
+                    for cel in rowz:
+                        sys.stderr.write(str(cel)+ ' ')
+                sys.stderr.write("\n")
+                sys.stderr.flush()
+
+        return direction
