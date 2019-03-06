@@ -165,9 +165,17 @@ class Board:
     # ========================== #
 
     def calculate_path(self, row, col, cell):
+        '''
+        :return:
+        Array of actions to be taken to reach teh target,
+        False if unreachable
+        '''
         cost = cell[row][col]
         directions = []
         while cost > 0:
+            if last_cost == cost:
+                return False
+            last_cost = cost
             # for rowz in cell:
             #     sys.stderr.write("\n")
             #     for cel in rowz:
@@ -266,3 +274,10 @@ class Board:
         sys.stderr.flush()
         directions = self.calculate_path(dest_row, dest_col, cell)
         return moves, directions
+
+    # ===========================#
+    # == STRATEGY: Smell-Trap == #
+    # ========================== #
+
+    def smell_trap(self, enemy_id, my_id, players, enemy=None, future_cell=None, moves=0):
+        return leak_fix(self, my_id, enemy_id, players, enemy=None, future_cell=None, moves=0)
