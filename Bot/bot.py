@@ -15,9 +15,13 @@ class Bot:
         #                                                   my_id=self.game.my_botid, players=self.game.players)
         # self.game.issue_order(self.directions.pop(0))
 
-        legal = self.game.field.legal_moves(self.game.my_botid, self.game.players)
-        if len(legal) == 0:
-            self.game.issue_order_pass()
-        else:
-            (_, chosen) = random.choice(legal)
-            self.game.issue_order(chosen)
+        # Flood_fill Use
+        (_,directions) = self.game.field.floodFill(self.game.field.cell, 0, 0, self.game.my_player())
+        self.game.issue_order(directions)
+
+        # legal = self.game.field.legal_moves(self.game.my_botid, self.game.players)
+        # if len(legal) == 0:
+        #     self.game.issue_order_pass()
+        # else:
+        #     (_, chosen) = random.choice(legal)
+        #     self.game.issue_order(chosen)

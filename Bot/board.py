@@ -266,3 +266,55 @@ class Board:
         sys.stderr.flush()
         directions = self.calculate_path(dest_row, dest_col, cell)
         return moves, directions
+
+    def calculate_remaining_movable_area(self, player_id, players):
+        my_position = players[player_id]
+        up, down, right, left = 0
+        allFalse = False
+
+        while not allFalse:
+            allFalse = True
+            if self.is_legal(my_position.row + right + 1, my_position.col, player_id):
+                allFalse = False
+                right += 1
+            if self.is_legal(my_position.row, my_position.col + up + 1, player_id):
+                allFalse = False
+                up += 1
+            if self.is_legal(my_position.row - left - 1, my_position.col, player_id):
+                allFalse = False
+                left += 1
+            if self.is_legal(my_position.row, my_position.col - down - 1, player_id):
+                allFalse = False
+                down += 1
+        return [up, down, right, left]
+
+    def flood_fill(self, areaMap, x, y, my_id, order):
+        directions = []
+        # The recursive algorithm. Starting at x and y, changes any adjacent
+        # characters that match oldChar to newChar.
+        worldWidth = self.width
+        worldHeight = self.height
+
+        if areaMap[x][y] != CHARTABLE[2][1]:
+            # Base case. If the current x, y character is not empty,
+            # then do nothing.
+            return directions
+
+        # Change the character at world[x][y]to newChar
+        areaMap[x][y] = CHARTABLE[my_id][1]
+        self.cell[x][y] = CHARTABLE[3][1]  # Putting a blocked symbol
+        directions.append(order)
+
+        # Recursive calls. Make a recursive call as long as we are not on the
+        # boundary (which would cause an Index Error.)
+        if x > 0:  # left
+            self.floodFill(areaMap, x - 1, y, my_id, DIRS[3])
+
+        if y > 0:  # up
+            self.floodFill(areaMap, x, y - 1, my_id, DIRS[0])
+
+        if x < worldWidth - 1:  # right
+            self.floodFill(areaMap, x + 1, y, my_id, DIRS[1])
+
+        if y < worldHeight - 1:  # down
+            self.floodFill(areaMap, x, y + 1, my_id, DIRS[2])
