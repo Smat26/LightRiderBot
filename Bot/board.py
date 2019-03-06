@@ -355,7 +355,8 @@ class Board:
         return len(discovered)
 
 
-    def get_cell_given_direction(self, cell, direction, player):
+    def get_cell_given_direction(self, cell, direction, player, player_id):
+        updated = False;
 
         row = col = 0
         if direction == 'up':
@@ -367,6 +368,8 @@ class Board:
         elif direction == 'left':
             col = -1
 
-        cell[player.row+row][player.col+col] = [BLOCKED]  # Putting a blocked symbol on current head
+        if self.is_legal(player.row+row, player.col+col, player_id):
+            cell[player.row+row][player.col+col] = [BLOCKED]  # Putting a blocked symbol on current head
+            updated = True
 
-        return cell
+        return cell, updated
