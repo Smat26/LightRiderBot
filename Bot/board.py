@@ -280,7 +280,8 @@ class Board:
     # ========================== #
 
     def smell_trap(self, enemy_id, my_id, players, enemy=None, future_cell=None, moves=0):
-        return leak_fix(self, my_id, enemy_id, players, enemy=None, future_cell=None, moves=0)
+
+        return self.leak_fix(self, my_id, enemy_id, players, enemy=None, future_cell=None, moves=0)
 
     def calculate_remaining_movable_area(self, player_id, players):
         my_position = players[player_id]
@@ -304,7 +305,6 @@ class Board:
             if self.is_legal(my_position.row, my_position.col - left - 1, player_id):
                 allFalse = False
                 left += 1
-
 
         sys.stderr.write('(' + str(up) + "," + str(down) + "," + str(right) + "," + str(left) + ") <-up, down, right, left\n")
         sys.stderr.write("\n")
@@ -363,3 +363,34 @@ class Board:
                 sys.stderr.flush()
 
         return direction
+
+    def get_cell_given_direction(self, cell, direction, player):
+
+        sys.stderr.write('\nBefore')
+        for rowz in cell:
+            sys.stderr.write("\n")
+            for cel in rowz:
+                sys.stderr.write(str(cel)+ ' ')
+        sys.stderr.write("\n")
+        sys.stderr.flush()
+        row = col = 0
+        if direction == 'up':
+            row = -1
+        elif direction == 'down':
+            row = 1
+        elif direction == 'right':
+            col = 1
+        elif direction == 'left':
+            col = -1
+
+        cell[player.row+row][player.col+col] = CHARTABLE[3][1]  # Putting a blocked symbol on current head
+
+        sys.stderr.write('\nAfter')
+        for rowz in cell:
+            sys.stderr.write("\n")
+            for cel in rowz:
+                sys.stderr.write(str(cel)+ ' ')
+        sys.stderr.write("\n")
+        sys.stderr.flush()
+
+        return cell
