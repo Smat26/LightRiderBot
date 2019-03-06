@@ -8,17 +8,35 @@ class Bot:
 
     def setup(self, game):
         self.game = game
-        self.directions = None
 
     def do_turn(self):
-        # flood = self.game.field.flood_fill(players=self.game.players, my_id=self.game.my_botid)
-        # sys.stderr.write(str(flood)+' <--Movable area is \n' )
-        # sys.stderr.flush()
-        if not self.directions:
-            moves, directions = self.game.field.dijkstra_path(dest_row=0,dest_col=0,cell=self.game.field.cell,my_id=self.game.my_botid, players=self.game.players)
-            self.directions = directions
-        for direction in self.directions:
-            sys.stderr.write(direction+'\n' )
-        sys.stderr.write('===========\n' )
+
+        # Dijkstra_Usage
+        # moves, directions = self.game.field.dijkstra_path(dest_row=0, dest_col=0, cell=self.game.field.cell,
+        #                                                   my_id=self.game.my_botid, players=self.game.players)
+        # self.game.issue_order(directions.pop(0))
+
+        #Flood_fill Use
+        direction_moves = self.game.field.calculate_remaining_movable_area(player_id=self.game.my_botid, players=self.game.players)
+        value = max(direction_moves.iterkeys(), key=(lambda key: direction_moves[key]))
+
+        for key, val in direction_moves.items():
+            print key, "=>", val
+        sys.stderr.write("directions\n")
+        sys.stderr.write(str(value) + ' ')
+        sys.stderr.write("\n")
         sys.stderr.flush()
-        self.game.issue_order(self.directions.pop(0))
+        updated_cell = self.game.field.get_cell_given_direction(self.game.field.cell, value, self.game.my_player())
+        self.game.field.smell_trap(self.game.my_botid, self.game.other_botid, self.game.players, enemy=None, future_cell=updated_cell, moves=0)
+
+        if value:
+            self.game.issue_order(value)
+        else:
+            self.game.issue_order_pass()
+
+        # legal = self.game.field.legal_moves(self.game.my_botid, self.game.players)
+        # if len(legal) == 0:
+        #     self.game.issue_order_pass()
+        # else:
+        #     (_, chosen) = random.choice(legal)
+        #     self.game.issue_order(chosen)

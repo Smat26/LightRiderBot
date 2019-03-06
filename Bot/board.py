@@ -109,7 +109,7 @@ class Board:
     # === STRATEGY: LEAK-FIX === #
     # ========================== #
 
-    def is_future_legal(self, row, col, my_id):
+    def is_future_legal(self, row, col, cell, my_id):
         '''
         my_id is used, because I am my enemy's enemy
 
@@ -141,14 +141,14 @@ class Board:
 
         if not future_cell:
             future_cell = copy.deepcopy(self.cell)
-        enemy_legal_moves = self.future_legal_moves(self, enemy, future_cell, my_id)
+        enemy_legal_moves = self.future_legal_moves(enemy, future_cell, my_id)
         if len(enemy_legal_moves) == 1:
-            self.output()
+            # self.output()
             enemy = player.Player()
-            enemy.row = enemy_legal_moves[0][0] + enemy.row
-            enemy.col = enemy_legal_moves[0][1] + enemy.col
-            future_cell[row][col] = CHARTABLE[3][1]  # Putting a blocked symbol on current head
-            future_cell[row][col] = CHARTABLE[enemy_id][1]  # Putting the head on the future move
+            enemy.row = int(enemy_legal_moves[0][0][0]) + enemy.row
+            enemy.col = int(enemy_legal_moves[0][0][1]) + enemy.col
+            future_cell[enemy.row][enemy.col] = [BLOCKED]  # Putting a blocked symbol on current head
+            future_cell[enemy.row][enemy.col] = [enemy_id]  # Putting the head on the future move
             moves = moves + 1
             return self.leak_fix(enemy_id, my_id, players, enemy, future_cell, moves)
         elif len(enemy_legal_moves) == 0:
@@ -197,7 +197,7 @@ class Board:
                     sys.stderr.write(direction + "\n")
                     cost = cell[row + value][col]
                     row = row + value
-                break
+                    break
             # For Col
             for value in [1, -1]:
                 if col == 0 and value == -1:
@@ -321,7 +321,7 @@ class Board:
     # ========================== #
 
     def smell_trap(self, enemy_id, my_id, players, enemy=None, future_cell=None, moves=0):
-        return self.leak_fix(self, my_id, enemy_id, players, enemy=None, future_cell=None, moves=0)
+        return self.leak_fix(my_id, enemy_id, players, enemy=None, future_cell=None, moves=0)
 
     def calculate_remaining_movable_area(self, player_id, players):
         my_position = players[player_id]
@@ -346,6 +346,10 @@ class Board:
                 allFalse = False
                 left += 1
 
+        sys.stderr.write('(' + str(up) + "," + str(down) + "," + str(right) + "," + str(left) + ") <-up, down, right, left\n")
+        sys.stderr.write("\n")
+        sys.stderr.flush()
+        return {'up':up, 'down':down, 'right':right, 'left':left}
 
     def flood_fill(self, players, my_id, start_row=None, start_col=None, cell=None):
         if not cell:
@@ -367,7 +371,6 @@ class Board:
             frontier = list(new_frontier)
         return len(discovered)
 
-
 #     def floodFill(self, world, x, y, my_id):
 #         # Starting at x and y, changes any adjacent
 #         # characters that match oldChar to newChar.
@@ -388,34 +391,65 @@ class Board:
 #             sys.stderr.write("\n")
 #             sys.stderr.flush()
 
-#             x, y = theStack.pop()
-#             if self.in_bounds(x,y) and self.is_legal(x, y, my_id):
-#                 #up, down, right, left = self.calculate_remaining_movable_area(my_id, players)
-#                 #dir.append(max(up, down, right, left))
-#                 # Change the character at world[x][y] to newChar
-#                 world[x][y] = '+'
+        #     x, y = theStack.pop()
+        #     if self.in_bounds(x,y) and self.is_legal(x, y, my_id):
+        #         #up, down, right, left = self.calculate_remaining_movable_area(my_id, players)
+        #         #dir.append(max(up, down, right, left))
+        #         # Change the character at world[x][y] to newChar
+        #         world[x][y] = '+'
+        #
+        #         if x > 0: # left
+        #             theStack.append( (x-1, y) )
+        #             direction.append('left')
+        #
+        #         if y > 0: # up
+        #             theStack.append( (x, y-1) )
+        #             direction.append('up')
+        #
+        #         if x < worldWidth-1: # right
+        #             theStack.append( (x+1, y) )
+        #             direction.append('right')
+        #
+        #         if y < worldHeight-1: # down
+        #             theStack.append( (x, y+1) )
+        #             direction.append('down')
+        #     else:
+        #         for rowz in world:
+        #             sys.stderr.write("\n")
+        #             for cel in rowz:
+        #                 sys.stderr.write(str(cel)+ ' ')
+        #         sys.stderr.write("\n")
+        #         sys.stderr.flush()
+        #
+        # return direction
 
-#                 if x > 0: # left
-#                     theStack.append( (x-1, y) )
-#                     direction.append('left')
+    def get_cell_given_direction(self, cell, direction, player):
 
-#                 if y > 0: # up
-#                     theStack.append( (x, y-1) )
-#                     direction.append('up')
+        # sys.stderr.write('\nBefore')
+        # for rowz in cell:
+        #     sys.stderr.write("\n")
+        #     for cel in rowz:
+        #         sys.stderr.write(str(cel)+ ' ')
+        # sys.stderr.write("\n")
+        # sys.stderr.flush()
+        row = col = 0
+        if direction == 'up':
+            row = -1
+        elif direction == 'down':
+            row = 1
+        elif direction == 'right':
+            col = 1
+        elif direction == 'left':
+            col = -1
 
-#                 if x < worldWidth-1: # right
-#                     theStack.append( (x+1, y) )
-#                     direction.append('right')
+        cell[player.row+row][player.col+col] = [BLOCKED]  # Putting a blocked symbol on current head
 
-#                 if y < worldHeight-1: # down
-#                     theStack.append( (x, y+1) )
-#                     direction.append('down')
-#             else:
-#                 for rowz in world:
-#                     sys.stderr.write("\n")
-#                     for cel in rowz:
-#                         sys.stderr.write(str(cel)+ ' ')
-#                 sys.stderr.write("\n")
-#                 sys.stderr.flush()
+        # sys.stderr.write('\nAfter')
+        # for rowz in cell:
+        #     sys.stderr.write("\n")
+        #     for cel in rowz:
+        #         sys.stderr.write(str(cel)+ ' ')
+        # sys.stderr.write("\n")
+        # sys.stderr.flush()
 
-#         return direction
+        return cell
