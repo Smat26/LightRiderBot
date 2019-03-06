@@ -29,8 +29,10 @@ class Bot:
         updated_cell = self.game.field.get_cell_given_direction(self.game.field.cell, value, self.game.my_player())
         self.game.field.smell_trap(self.game.my_botid, self.game.other_botid, self.game.players, enemy=None, future_cell=updated_cell, moves=0)
 
-
-        self.game.issue_order(value)
+        if value:
+            self.game.issue_order(value)
+        else:
+            self.game.issue_order_pass()
 
         # legal = self.game.field.legal_moves(self.game.my_botid, self.game.players)
         # if len(legal) == 0:
