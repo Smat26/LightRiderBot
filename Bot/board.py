@@ -195,12 +195,9 @@ class Board:
                     else:
                         direction = 'down'
                     directions.append(direction)
-                    sys.stderr.write(direction + "\n")
                     cost = cell[row + value][col]
                     row = row + value
                     break
-            sys.stderr.write(str(cost) + " <-cost\n")
-            sys.stderr.write('(' + str(row) + "," + str(col) + ") <-row,col\n")
             # For Col
             for value in [1, -1]:
                 if col == 0 and value == -1:
@@ -213,13 +210,9 @@ class Board:
                     else:
                         direction = 'right'
                     directions.append(direction)
-                    sys.stderr.write(direction + "\n")
                     cost = cell[row][col + value]
                     col = col + value
                     break
-            sys.stderr.write(str(cost) + " <-cost\n")
-            sys.stderr.write('(' + str(row) + "," + str(col) + ") <-row,col\n")
-            sys.stderr.flush()
         return directions
 
     def dijkstra_update_around(self, row, col, cell):
@@ -241,34 +234,22 @@ class Board:
                 continue
             elif col == 15 and value == 1:
                 continue
-            # sys.stderr.write("ROW:%s, COL:%s, VAL:%s \n" % (str(row), str(col), str(value)))
-            # sys.stderr.flush()
             if BLOCKED != cell[row][col + value]:
                 cell[row][col + value] = min(cell[row][col + value], cell[row][col] + 1)
                 updated.append((row, col + value))
         return updated, cell
 
-    def flood_fill_update_around(self, row, col, cell, discovered=set()):
+    def flood_fill_update_around(self, row, col, cell):
         updated = []
-        if (row,col) in discovered:
-            return [], cell
-        for rowz in cell:
-            sys.stderr.write("\n")
-            for cel in rowz:
-                sys.stderr.write(str(cel)+ ' ')
-        sys.stderr.write("\n")
-        sys.stderr.flush()
-
         # For row
         for value in [1, -1]:
             if row <= 0 and value == -1:
                 continue
             elif row >= 15 and value == 1:
                 continue
-            sys.stderr.flush()
             if BLOCKED not in cell[row + value][col]:
                 cell[row + value][col] = ['I']
-                if row + value >= 15 and row + value <= 0:
+                if row + value <= 15 and row+value >= 0:
                     updated.append((row +value, col))
         # For Col
         for value in [1, -1]:
@@ -276,7 +257,6 @@ class Board:
                 continue
             elif col >= 15 and value == 1:
                 continue
-            sys.stderr.flush()
             if BLOCKED not in cell[row][col + value]:
                 cell[row][col + value] = ['I']
                 if col + value <= 15 and col+value >= 0:
@@ -310,12 +290,12 @@ class Board:
         moves = cell[dest_row][dest_col]
         sys.stderr.write("Moves required by djisktra %s \n" % str(moves))
         sys.stderr.flush()
-        for row in cell:
-            sys.stderr.write("\n")
-            for cel in row:
-                sys.stderr.write(str(cel) + ' ')
-        sys.stderr.write("\n")
-        sys.stderr.flush()
+        # for row in cell:
+        #     sys.stderr.write("\n")
+        #     for cel in row:
+        #         sys.stderr.write(str(cel) + ' ')
+        # sys.stderr.write("\n")
+        # sys.stderr.flush()
         directions = self.calculate_path(dest_row, dest_col, cell)
         return moves, directions
 
@@ -367,74 +347,16 @@ class Board:
         while frontier:
             new_frontier = set()
             for position in frontier:
-                temp_frontier, cell = self.flood_fill_update_around(position[0], position[1], cell, discovered)
+                temp_frontier, cell = self.flood_fill_update_around(position[0], position[1], cell)
                 for front in temp_frontier:
                     new_frontier.add(front)
                     discovered.add(front)
             frontier = list(new_frontier)
         return len(discovered)
 
-#     def floodFill(self, world, x, y, my_id):
-#         # Starting at x and y, changes any adjacent
-#         # characters that match oldChar to newChar.
-#         worldWidth = self.width-1
-#         worldHeight = self.height-1
-#         theStack =[ (x, y) ]
-#         direction=[]
-
-#         sys.stderr.write('(' + str(worldWidth) + "," + str(worldHeight) + ") <-width, height\n")
-#         sys.stderr.write("\n")
-#         sys.stderr.flush()
-#         while len(theStack) > 0:
-
-#             sys.stderr.write('(' + str(x) + "," + str(y) + ") <-row,col\n")
-#             sys.stderr.write('inside stack\n')
-#             for rowz, colz in theStack:
-#                 sys.stderr.write('(' + str(rowz) + "," + str(colz)+ ")\n")
-#             sys.stderr.write("\n")
-#             sys.stderr.flush()
-
-        #     x, y = theStack.pop()
-        #     if self.in_bounds(x,y) and self.is_legal(x, y, my_id):
-        #         #up, down, right, left = self.calculate_remaining_movable_area(my_id, players)
-        #         #dir.append(max(up, down, right, left))
-        #         # Change the character at world[x][y] to newChar
-        #         world[x][y] = '+'
-        #
-        #         if x > 0: # left
-        #             theStack.append( (x-1, y) )
-        #             direction.append('left')
-        #
-        #         if y > 0: # up
-        #             theStack.append( (x, y-1) )
-        #             direction.append('up')
-        #
-        #         if x < worldWidth-1: # right
-        #             theStack.append( (x+1, y) )
-        #             direction.append('right')
-        #
-        #         if y < worldHeight-1: # down
-        #             theStack.append( (x, y+1) )
-        #             direction.append('down')
-        #     else:
-        #         for rowz in world:
-        #             sys.stderr.write("\n")
-        #             for cel in rowz:
-        #                 sys.stderr.write(str(cel)+ ' ')
-        #         sys.stderr.write("\n")
-        #         sys.stderr.flush()
-        #
-        # return direction
 
     def get_cell_given_direction(self, cell, direction, player):
 
-        # sys.stderr.write('\nBefore')
-        # for rowz in cell:
-        #     sys.stderr.write("\n")
-        #     for cel in rowz:
-        #         sys.stderr.write(str(cel)+ ' ')
-        # sys.stderr.write("\n")
-        # sys.stderr.flush()
         row = col = 0
         if direction == 'up':
             row = -1
@@ -446,13 +368,5 @@ class Board:
             col = -1
 
         cell[player.row+row][player.col+col] = [BLOCKED]  # Putting a blocked symbol on current head
-
-        # sys.stderr.write('\nAfter')
-        # for rowz in cell:
-        #     sys.stderr.write("\n")
-        #     for cel in rowz:
-        #         sys.stderr.write(str(cel)+ ' ')
-        # sys.stderr.write("\n")
-        # sys.stderr.flush()
 
         return cell
