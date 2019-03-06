@@ -191,14 +191,16 @@ class Board:
                     continue
                 if cell[row + value][col] < cost:
                     if value == 1:
-                        direction = 'left'
+                        direction = 'up'
                     else:
-                        direction = 'right'
+                        direction = 'down'
                     directions.append(direction)
                     sys.stderr.write(direction + "\n")
                     cost = cell[row + value][col]
                     row = row + value
                     break
+            sys.stderr.write(str(cost) + " <-cost\n")
+            sys.stderr.write('(' + str(row) + "," + str(col) + ") <-row,col\n")
             # For Col
             for value in [1, -1]:
                 if col == 0 and value == -1:
@@ -207,16 +209,16 @@ class Board:
                     continue
                 if cell[row][col + value] < cost:
                     if value == 1:
-                        direction = 'up'
+                        direction = 'left'
                     else:
-                        direction = 'down'
+                        direction = 'right'
                     directions.append(direction)
                     sys.stderr.write(direction + "\n")
                     cost = cell[row][col + value]
                     col = col + value
                     break
             sys.stderr.write(str(cost) + " <-cost\n")
-            sys.stderr.write('(' + str(row) + "," + str(col) + " <-row,col\n")
+            sys.stderr.write('(' + str(row) + "," + str(col) + ") <-row,col\n")
             sys.stderr.flush()
         return directions
 
@@ -228,8 +230,8 @@ class Board:
                 continue
             elif row == 15 and value == 1:
                 continue
-            sys.stderr.write("ROW:%s, COL:%s, VAL:%s \n" % (str(row), str(col), str(value)))
-            sys.stderr.flush()
+            # sys.stderr.write("ROW:%s, COL:%s, VAL:%s \n" % (str(row), str(col), str(value)))
+            # sys.stderr.flush()
             if BLOCKED != cell[row + value][col]:
                 cell[row + value][col] = min(cell[row + value][col], cell[row][col] + 1)
                 updated.append((row + value, col))
@@ -239,8 +241,8 @@ class Board:
                 continue
             elif col == 15 and value == 1:
                 continue
-            sys.stderr.write("ROW:%s, COL:%s, VAL:%s \n" % (str(row), str(col), str(value)))
-            sys.stderr.flush()
+            # sys.stderr.write("ROW:%s, COL:%s, VAL:%s \n" % (str(row), str(col), str(value)))
+            # sys.stderr.flush()
             if BLOCKED != cell[row][col + value]:
                 cell[row][col + value] = min(cell[row][col + value], cell[row][col] + 1)
                 updated.append((row, col + value))
