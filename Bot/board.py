@@ -306,13 +306,12 @@ class Board:
     def smell_trap(self, enemy_id, my_id, players, enemy=None, future_cell=None, moves=0):
         return self.leak_fix(my_id, enemy_id, players, enemy=None, future_cell=None, moves=0)
 
-    def calculate_remaining_movable_area(self, player_id, players, direction):
-        if not (direction):
-            my_position = players[player_id]
-            row = my_position.row
-            col=my_position.col
-        else:
-            row, col = self.get_coordinate_given_direction(direction, players, player_id)
+    def calculate_remaining_movable_area(self, player_id, players, directions):
+        my_position = players[player_id]
+        row = my_position.row
+        col=my_position.col
+        for direction in directions:
+            row, col = self.get_coordinate_given_direction(direction, row, col)
 
         sys.stderr.write("row %s and col %s \n" % (str(row),str(col)))
         sys.stderr.write("Direction %s \n" % str(direction))
@@ -383,10 +382,7 @@ class Board:
 
         return cell, updated
 
-    def get_coordinate_given_direction(self, direction, players, player_id):
-        my_position = players[player_id]
-        row = my_position.row
-        col = my_position.col
+    def get_coordinate_given_direction(self, direction, row, col):
 
         if direction == 'up':
             row += -1
