@@ -59,7 +59,7 @@ class Bot:
                 continue
 
             # The map after we made that move:
-            updated_cell = self.game.field.get_cell_given_direction(self.game.field.cell, direction, self.game.my_player())
+            updated_cell, is_updated = self.game.field.get_cell_given_direction(self.game.field.cell, direction, self.game.my_player(), self.game.my_botid)
             
             # What Moves we can make from this move?
             more_legal = self.game.field.future_legal_moves(self.game.players[self.game.my_botid], updated_cell,self.game.other_botid)
