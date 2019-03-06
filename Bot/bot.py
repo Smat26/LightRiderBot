@@ -20,7 +20,7 @@ class Bot:
         if self.killshot:
             self.game.issue_order(self.directions.pop(0))
             # Target has been eliminated
-            if not directions:
+            if not self.directions:
                 self.killshot = False
 
         # Can we go for a Kill?
@@ -66,8 +66,10 @@ class Bot:
             sys.stderr.write("Moves after %s are %s\n" % (direction, str(len(more_legal))))
             for more_moves in more_legal:
                 more_, more_direction = more_moves
-                direction_moves = self.game.field.calculate_remaining_movable_area(player_id=self.game.my_botid, players=self.game.players, direction= more_direction)
+                direction_moves = self.game.field.calculate_remaining_movable_area(player_id=self.game.my_botid, players=self.game.players, directions= [direction, more_direction])
                 good_move[direction] = good_move.get(direction, 0) + sum(direction_moves.values())
+            sys.stderr.write("Direction: %s have score %s\n" % (direction, str(good_move[direction])))
+            sys.stderr.flush()
             if direction in good_move.keys():
                 sys.stderr.write("Direction: %s have score %s\n" % (direction, str(good_move[direction])))
                 sys.stderr.flush()
