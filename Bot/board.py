@@ -198,7 +198,7 @@ class Board:
                     sys.stderr.write(direction + "\n")
                     cost = cell[row + value][col]
                     row = row + value
-                    break
+                break
             # For Col
             for value in [1, -1]:
                 if col == 0 and value == -1:
@@ -220,7 +220,7 @@ class Board:
             sys.stderr.flush()
         return directions
 
-    def update_around(self, row, col, cell):
+    def dijkstra_update_around(self, row, col, cell):
         updated = []
         # For row
         for value in [1, -1]:
@@ -228,6 +228,8 @@ class Board:
                 continue
             elif row == 15 and value == 1:
                 continue
+            sys.stderr.write("ROW:%s, COL:%s, VAL:%s \n" % (str(row), str(col), str(value)))
+            sys.stderr.flush()
             if BLOCKED != cell[row + value][col]:
                 cell[row + value][col] = min(cell[row + value][col], cell[row][col] + 1)
                 updated.append((row + value, col))
@@ -237,13 +239,51 @@ class Board:
                 continue
             elif col == 15 and value == 1:
                 continue
+            sys.stderr.write("ROW:%s, COL:%s, VAL:%s \n" % (str(row), str(col), str(value)))
+            sys.stderr.flush()
             if BLOCKED != cell[row][col + value]:
                 cell[row][col + value] = min(cell[row][col + value], cell[row][col] + 1)
                 updated.append((row, col + value))
         return updated, cell
 
+    def flood_fill_update_around(self, row, col, cell, discovered=set()):
+        updated = []
+        if (row,col) in discovered:
+            return [], cell
+        for rowz in cell:
+            sys.stderr.write("\n")
+            for cel in rowz:
+                sys.stderr.write(str(cel)+ ' ')
+        sys.stderr.write("\n")
+        sys.stderr.flush()
+
+        # For row
+        for value in [1, -1]:
+            if row <= 0 and value == -1:
+                continue
+            elif row >= 15 and value == 1:
+                continue
+            sys.stderr.flush()
+            if BLOCKED not in cell[row + value][col]:
+                cell[row + value][col] = ['I']
+                if row + value >= 15 and row + value <= 0:
+                    updated.append((row +value, col))
+        # For Col
+        for value in [1, -1]:
+            if col <= 0 and value == -1:
+                continue
+            elif col >= 15 and value == 1:
+                continue
+            sys.stderr.flush()
+            if BLOCKED not in cell[row][col + value]:
+                cell[row][col + value] = ['I']
+                if col + value <= 15 and col+value >= 0:
+                    updated.append((row , col+ value))
+
+        return updated, cell
+
     def initialize_cell(self, cell):
-        initialized_cell = [[item if item == 'x' else 99999 for item in row] for row in cell]
+        initialized_cell = [[item if item == '' else 99999 for item in row] for row in cell]
         return initialized_cell
 
     def dijkstra_path(self, dest_row, dest_col, cell, start_row=None, start_col=None, my_id=None, players=None):
@@ -256,11 +296,12 @@ class Board:
             start_row = players[my_id].row
             start_col = players[my_id].col
         cell[start_row][start_col] = 0
-        frontier, cell = self.update_around(start_row, start_col, cell)
+        frontier, cell = self.dijkstra_update_around(start_row, start_col, cell)
+        sys.stderr.flush()
         while frontier and (dest_row, dest_col) not in frontier:
             new_frontier = set()
             for position in frontier:
-                temp_frontier, cell = self.update_around(position[0], position[1], cell)
+                temp_frontier, cell = self.dijkstra_update_around(position[0], position[1], cell)
                 for front in temp_frontier:
                     new_frontier.add(front)
             frontier = list(new_frontier)
@@ -281,7 +322,7 @@ class Board:
     # ========================== #
 
     def smell_trap(self, enemy_id, my_id, players, enemy=None, future_cell=None, moves=0):
-        return leak_fix(self, my_id, enemy_id, players, enemy=None, future_cell=None, moves=0)
+        return self.leak_fix(self, my_id, enemy_id, players, enemy=None, future_cell=None, moves=0)
 
     def calculate_remaining_movable_area(self, player_id, players):
         my_position = players[player_id]
@@ -304,33 +345,23 @@ class Board:
                 down += 1
         return [up, down, right, left]
 
-    def flood_fill(self, areaMap, x, y, my_id, order):
-        directions = []
-        # The recursive algorithm. Starting at x and y, changes any adjacent
-        # characters that match oldChar to newChar.
-        worldWidth = self.width
-        worldHeight = self.height
 
-        if areaMap[x][y] != CHARTABLE[2][1]:
-            # Base case. If the current x, y character is not empty,
-            # then do nothing.
-            return directions
-
-        # Change the character at world[x][y]to newChar
-        areaMap[x][y] = CHARTABLE[my_id][1]
-        self.cell[x][y] = CHARTABLE[3][1]  # Putting a blocked symbol
-        directions.append(order)
-
-        # Recursive calls. Make a recursive call as long as we are not on the
-        # boundary (which would cause an Index Error.)
-        if x > 0:  # left
-            self.floodFill(areaMap, x - 1, y, my_id, DIRS[3])
-
-        if y > 0:  # up
-            self.floodFill(areaMap, x, y - 1, my_id, DIRS[0])
-
-        if x < worldWidth - 1:  # right
-            self.floodFill(areaMap, x + 1, y, my_id, DIRS[1])
-
-        if y < worldHeight - 1:  # down
-            self.floodFill(areaMap, x, y + 1, my_id, DIRS[2])
+    def flood_fill(self, players, my_id, start_row=None, start_col=None, cell=None):
+        if not cell:
+            cell = copy.deepcopy(self.cell)
+        # cell = self.initialize_cell(cell)
+        if not start_row or not start_col:
+            start_row = players[my_id].row
+            start_col = players[my_id].col
+        cell[start_row][start_col] = ['I']
+        frontier, cell = self.flood_fill_update_around(start_row, start_col, cell)
+        discovered = set()
+        while frontier:
+            new_frontier = set()
+            for position in frontier:
+                temp_frontier, cell = self.flood_fill_update_around(position[0], position[1], cell, discovered)
+                for front in temp_frontier:
+                    new_frontier.add(front)
+                    discovered.add(front)
+            frontier = list(new_frontier)
+        return len(discovered)
