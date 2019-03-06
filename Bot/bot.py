@@ -20,14 +20,15 @@ class Bot:
         direction_moves = self.game.field.calculate_remaining_movable_area(player_id=self.game.my_botid, players=self.game.players)
         value = max(direction_moves.iterkeys(), key=(lambda key: direction_moves[key]))
 
-        for key, val in direction_moves.items():
-            print key, "=>", val
-        sys.stderr.write("directions\n")
-        sys.stderr.write(str(value) + ' ')
-        sys.stderr.write("\n")
+        sys.stderr.write("GAME ROUND: %s \n" % self.game.round)
         sys.stderr.flush()
         updated_cell = self.game.field.get_cell_given_direction(self.game.field.cell, value, self.game.my_player())
-        self.game.field.smell_trap(self.game.my_botid, self.game.other_botid, self.game.players, enemy=None, future_cell=updated_cell, moves=0)
+        enemy, moves, trapped, future_cell = self.game.field.smell_trap(self.game.my_botid, self.game.other_botid, self.game.players, enemy=None, future_cell=updated_cell, moves=0)
+        if moves:
+            sys.stderr.write("MOVE: %s\n" % moves)
+            sys.stderr.write("Is Trapped?: %s\n" % trapped)
+            sys.stderr.write("END POS: %s,%s\n" % (str(enemy.row), str(enemy.col)))
+            sys.stderr.flush()
 
         if value:
             self.game.issue_order(value)

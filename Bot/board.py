@@ -144,10 +144,9 @@ class Board:
         enemy_legal_moves = self.future_legal_moves(enemy, future_cell, my_id)
         if len(enemy_legal_moves) == 1:
             # self.output()
-            enemy = player.Player()
+            future_cell[enemy.row][enemy.col] = [BLOCKED]  # Putting a blocked symbol on current head
             enemy.row = int(enemy_legal_moves[0][0][0]) + enemy.row
             enemy.col = int(enemy_legal_moves[0][0][1]) + enemy.col
-            future_cell[enemy.row][enemy.col] = [BLOCKED]  # Putting a blocked symbol on current head
             future_cell[enemy.row][enemy.col] = [enemy_id]  # Putting the head on the future move
             moves = moves + 1
             return self.leak_fix(enemy_id, my_id, players, enemy, future_cell, moves)
@@ -157,6 +156,8 @@ class Board:
             return enemy, moves, True, future_cell
         else:
             # returns enemy position and moves to get there
+            sys.stderr.write("Enemy will be trapped for %s moves" % str(moves))
+            sys.stderr.flush()
             return enemy, moves, False, future_cell
 
     # ===========================#
