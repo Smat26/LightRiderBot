@@ -140,8 +140,8 @@ class Board:
             my_id = enemy_id ^ 1
 
         if not future_cell:
-            future_cell = self.cell.copy()
-        enemy_legal_moves = self.future_legal_moves(self, enemy, cell, my_id)
+            future_cell = copy.deepcopy(self.cell)
+        enemy_legal_moves = self.future_legal_moves(self, enemy, future_cell, my_id)
         if len(enemy_legal_moves) == 1:
             self.output()
             enemy = player.Player()
@@ -171,6 +171,7 @@ class Board:
         '''
         cost = cell[row][col]
         directions = []
+        last_cost = 9999
         while cost > 0:
             if last_cost == cost:
                 return False
