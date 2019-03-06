@@ -59,8 +59,7 @@ class Board:
 
     def is_legal(self, row, col, my_id):
         enemy_id = my_id ^ 1
-        return (self.in_bounds(row, col)) and (not BLOCKED in self.cell[row][col]) and (
-            not enemy_id in self.cell[row][col])
+        return (self.in_bounds(row, col)) and (not BLOCKED in self.cell[row][col]) and (not enemy_id in self.cell[row][col])
 
     def is_legal_tuple(self, loc):
         row, col = loc
@@ -326,24 +325,26 @@ class Board:
 
     def calculate_remaining_movable_area(self, player_id, players):
         my_position = players[player_id]
-        up, down, right, left = 0
+        up = 0
+        down = 0
+        right = 0
+        left = 0
         allFalse = False
 
         while not allFalse:
             allFalse = True
-            if self.is_legal(my_position.row + right + 1, my_position.col, player_id):
-                allFalse = False
-                right += 1
-            if self.is_legal(my_position.row, my_position.col + up + 1, player_id):
-                allFalse = False
-                up += 1
-            if self.is_legal(my_position.row - left - 1, my_position.col, player_id):
-                allFalse = False
-                left += 1
-            if self.is_legal(my_position.row, my_position.col - down - 1, player_id):
+            if self.is_legal(my_position.row + down + 1, my_position.col, player_id):
                 allFalse = False
                 down += 1
-        return [up, down, right, left]
+            if self.is_legal(my_position.row, my_position.col + right + 1, player_id):
+                allFalse = False
+                right += 1
+            if self.is_legal(my_position.row - up - 1, my_position.col, player_id):
+                allFalse = False
+                up += 1
+            if self.is_legal(my_position.row, my_position.col - left - 1, player_id):
+                allFalse = False
+                left += 1
 
 
     def flood_fill(self, players, my_id, start_row=None, start_col=None, cell=None):
@@ -365,3 +366,56 @@ class Board:
                     discovered.add(front)
             frontier = list(new_frontier)
         return len(discovered)
+
+
+#     def floodFill(self, world, x, y, my_id):
+#         # Starting at x and y, changes any adjacent
+#         # characters that match oldChar to newChar.
+#         worldWidth = self.width-1
+#         worldHeight = self.height-1
+#         theStack =[ (x, y) ]
+#         direction=[]
+
+#         sys.stderr.write('(' + str(worldWidth) + "," + str(worldHeight) + ") <-width, height\n")
+#         sys.stderr.write("\n")
+#         sys.stderr.flush()
+#         while len(theStack) > 0:
+
+#             sys.stderr.write('(' + str(x) + "," + str(y) + ") <-row,col\n")
+#             sys.stderr.write('inside stack\n')
+#             for rowz, colz in theStack:
+#                 sys.stderr.write('(' + str(rowz) + "," + str(colz)+ ")\n")
+#             sys.stderr.write("\n")
+#             sys.stderr.flush()
+
+#             x, y = theStack.pop()
+#             if self.in_bounds(x,y) and self.is_legal(x, y, my_id):
+#                 #up, down, right, left = self.calculate_remaining_movable_area(my_id, players)
+#                 #dir.append(max(up, down, right, left))
+#                 # Change the character at world[x][y] to newChar
+#                 world[x][y] = '+'
+
+#                 if x > 0: # left
+#                     theStack.append( (x-1, y) )
+#                     direction.append('left')
+
+#                 if y > 0: # up
+#                     theStack.append( (x, y-1) )
+#                     direction.append('up')
+
+#                 if x < worldWidth-1: # right
+#                     theStack.append( (x+1, y) )
+#                     direction.append('right')
+
+#                 if y < worldHeight-1: # down
+#                     theStack.append( (x, y+1) )
+#                     direction.append('down')
+#             else:
+#                 for rowz in world:
+#                     sys.stderr.write("\n")
+#                     for cel in rowz:
+#                         sys.stderr.write(str(cel)+ ' ')
+#                 sys.stderr.write("\n")
+#                 sys.stderr.flush()
+
+#         return direction
