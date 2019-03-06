@@ -54,6 +54,8 @@ class Bot:
             my_pos, my_moves, my_trapped, my_future_cell = self.game.field.leak_fix( self.game.other_botid,self.game.my_botid, self.game.players, enemy=None, future_cell=self.game.field.cell, moves=0)
             if my_trapped:
                 trapped.append(direction)
+                sys.stderr.write("%s leads to TRAP!\n" % direction)
+                sys.stderr.flush()
                 continue
 
             # The map after we made that move:
@@ -61,18 +63,39 @@ class Bot:
             
             # What Moves we can make from this move?
             more_legal = self.game.field.future_legal_moves(self.game.players[self.game.my_botid], updated_cell,self.game.other_botid)
+            sys.stderr.write("Moves after %s are %s\n" % (direction, str(len(more_legal))))
             for more_moves in more_legal:
                 more_, more_direction = more_moves
                 direction_moves = self.game.field.calculate_remaining_movable_area(player_id=self.game.my_botid, players=self.game.players)
                 good_move[direction] = good_move.get(direction, 0) + sum(direction_moves.values())
+            if direction in good_move.keys():
+                sys.stderr.write("Direction: %s have score %s\n" % (direction, str(good_move[direction])))
+                sys.stderr.flush()
+
         
         if good_move:
             maxval = max(good_move.values())
+            # If Trapped 
+            if not maxval:
+                sys.stderr.write("MOVING: %s\n" % "PASSED")
+                sys.stderr.flush()
+                self.game.issue_order_pass()
+                return
+
             direction = [k for k,v in good_move.items() if v==maxval][0]
+            sys.stderr.write("MOVING: %s\n" % direction)
+            sys.stderr.flush()
             self.game.issue_order(direction)
-        else:
-            # Improvise trap comparison:
+        elif trapped:
+            sys.stderr.write("MOVING: %s\n" % trapped[0])
+            sys.stderr.flush()
+            # Improvise trap comparison
             self.game.issue_order(trapped[0])
+        else:
+            sys.stderr.write("MOVING: %s\n" % "PASSED")
+            sys.stderr.flush()
+            self.game.issue_order_pass()
+
 
 
         
