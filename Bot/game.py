@@ -115,3 +115,11 @@ class Game():
                 traceback.print_exc(file=sys.stderr)
                 sys.stderr.flush()
 
+    # find other bot position
+    def find_bot_position(self, id_of_player):
+        return self.players[id_of_player]
+
+    #calculate difference b/w two bots
+    def get_if_bots_are_one_step_away(self):
+        return abs(self.players[0].row-self.players[1].row) ==1 and abs(self.players[0].col-self.players[1].col) ==1
+
