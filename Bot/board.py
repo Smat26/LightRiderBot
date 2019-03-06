@@ -330,7 +330,6 @@ class Board:
                 left += 1
 
         sys.stderr.write('(' + str(up) + "," + str(down) + "," + str(right) + "," + str(left) + ") <-up, down, right, left\n")
-        sys.stderr.write("\n")
         sys.stderr.flush()
         return {'up':up, 'down':down, 'right':right, 'left':left}
 
