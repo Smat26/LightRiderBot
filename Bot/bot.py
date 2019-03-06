@@ -62,7 +62,8 @@ class Bot:
             updated_cell, is_updated = self.game.field.get_cell_given_direction(self.game.field.cell, direction, self.game.my_player(), self.game.my_botid)
             
             # What Moves we can make from this move?
-            more_legal = self.game.field.future_legal_moves(self.game.players[self.game.my_botid], updated_cell,self.game.other_botid)
+            # more_legal = self.game.field.future_legal_moves(self.game.players[self.game.my_botid], updated_cell,self.game.other_botid)
+            more_legal = self.game.field.legal_moves2(my_id=self.game.my_botid, players=self.game.players,cell=updated_cell)
             sys.stderr.write("Moves after %s are %s\n" % (direction, str(len(more_legal))))
             for more_moves in more_legal:
                 more_, more_direction = more_moves
@@ -72,8 +73,12 @@ class Bot:
                 good_move[direction] = good_move.get(direction, 0) + sum(direction_moves.values())
                 sys.stderr.write("Good-Move-Direction: %s\n" % str(good_move[direction]))
                 sys.stderr.flush()
-            sys.stderr.write("=========================\n" )
-            sys.stderr.flush()
+                sys.stderr.write("=========================\n" )
+            for k,v in good_move.items():
+                sys.stderr.write("Key: %s Value: %s\n" % (k, str(v)))
+                sys.stderr.flush()
+
+            sys.stderr.flush() 
             if direction in good_move.keys():
                 sys.stderr.write("Direction: %s have score %s\n" % (direction, str(good_move[direction])))
                 sys.stderr.flush()

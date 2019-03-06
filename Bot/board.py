@@ -85,6 +85,22 @@ class Board:
                 pass
         return result
 
+    def is_legal2(self, row, col, my_id,cell):
+        enemy_id = my_id ^ 1
+        return (self.in_bounds(row, col)) and (not BLOCKED in cell[row][col]) and (not enemy_id in cell[row][col])
+
+    def legal_moves2(self, my_id, players,cell):
+        my_player = players[my_id]
+        result = []
+        for ((o_row, o_col), order) in DIRS:
+            t_row = my_player.row + o_row
+            t_col = my_player.col + o_col
+            if self.is_legal2(t_row, t_col, my_id,cell):
+                result.append(((o_row, o_col), order))
+            else:
+                pass
+        return result
+
     def output_cell(self, cell):
         done = False
         for (i, symbol) in CHARTABLE:
@@ -375,9 +391,9 @@ class Board:
             col = 1
         elif direction == 'left':
             col = -1
-
+        cell[player.row][player.col] = [BLOCKED]  # Putting a blocked symbol on current head
         if self.is_legal(player.row+row, player.col+col, player_id):
-            cell[player.row+row][player.col+col] = [BLOCKED]  # Putting a blocked symbol on current head
+            cell[player.row+row][player.col+col] = [player_id]  # Putting player ID symbol on future head
             updated = True
 
         return cell, updated
