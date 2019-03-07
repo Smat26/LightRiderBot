@@ -84,25 +84,29 @@ class Bot:
             sys.stderr.write("Is Trapped?: %s\n" % my_trapped)
             sys.stderr.write("END POS: %s,%s\n" % (str(my_pos.row), str(my_pos.col)))
         sys.stderr.flush()
-        while( my_trapped):
+        while(my_trapped):
+
             del direction_moves[value]
             if not direction_moves:
                 break
             value = max(direction_moves.keys(), key=(lambda key: direction_moves[key]))
-            my_pos, new_moves, my_trapped, my_future_cell = self.game.field.leak_fix2(self.game.other_botid,
-                                                                                    self.game.my_botid,
-                                                                                    self.game.players, enemy=None,
-                                                                                    future_cell=self.game.field.cell,
-                                                                                    moves=0, direction=value)
+            if direction_moves[value] != 0:
+                my_pos, new_moves, my_trapped, my_future_cell = self.game.field.leak_fix2(self.game.other_botid,
+                                                                                            self.game.my_botid,
+                                                                                            self.game.players, enemy=None,
+                                                                                            future_cell=self.game.field.cell,
+                                                                                            moves=0, direction=value)
+            else:
+                my_trapped = True
 
         if not direction_moves:
             # All directions are trapped
 
-            sys.stderr.write("row: %s, col %s \n" %(str(self.game.my_player().row), str(self.game.my_player().col)))
-            sys.stderr.write("\n")
             sys.stderr.flush()
             value = max(backup_move.keys(), key=(lambda key: backup_move[key]))
 
+            sys.stderr.write("value if no direction moves %s" %(str(value)))
+            sys.stderr.write("\n")
 
 
 
