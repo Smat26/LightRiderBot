@@ -102,6 +102,53 @@ class Board:
                 pass
         return result
 
+    def leak_fix2(self, enemy_id, my_id, players, enemy=None, future_cell=None, moves=0, direction=None):
+        '''
+        Returns:
+            enemy position, after M moves, and whether it's trapped, and cell at that time.
+        '''
+        if not enemy:
+            enemy = players[enemy_id]
+            my_id = enemy_id ^ 1
+
+        if direction:
+            row, col = self.get_coordinate_given_direction(direction, enemy.row, enemy.col)
+
+
+        if not future_cell:
+            future_cell = copy.deepcopy(self.cell)
+        enemy_legal_moves = self.legal_moves2( enemy_id,players, future_cell,direction)
+        if len(enemy_legal_moves) == 1:
+            # self.output()
+            if row >= self.height:
+                row = self.height-1
+            elif row < 0:
+                row = 0
+            if col >= self.width:
+                col = self.width-1
+            elif col < 0:
+                col = 0
+
+            future_cell[row][col] = [BLOCKED]  # Putting a blocked symbol on current head
+            row = int(enemy_legal_moves[0][0][0]) + row
+            col = int(enemy_legal_moves[0][0][1]) + col
+            future_cell[row][col] = [enemy_id]  # Putting the head on the future move
+            moves = moves + 1
+            enemy = player.Player()
+            enemy.row = row
+            enemy.col = col
+            return self.leak_fix(enemy_id, my_id, players, enemy, future_cell, moves)
+        elif len(enemy_legal_moves) == 0:
+            sys.stderr.write("Enemy trapped dies in %s moves\n" % str(moves))
+            sys.stderr.flush()
+            return enemy, moves, True, future_cell
+        else:
+            # returns enemy position and moves to get there
+            sys.stderr.write("Enemy will be trapped for %s moves\n" % str(moves))
+            sys.stderr.flush()
+            return enemy, moves, False, future_cell
+
+
     def output_cell(self, cell):
         done = False
         for (i, symbol) in CHARTABLE:
@@ -323,17 +370,8 @@ class Board:
     def smell_trap(self, enemy_id, my_id, players, enemy=None, future_cell=None, moves=0):
         return self.leak_fix(my_id, enemy_id, players, enemy=None, future_cell=None, moves=0)
 
-    def calculate_remaining_movable_area(self, player_id, players, directions):
+    def calculate_remaining_movable_area(self, player_id, players):
         my_position = players[player_id]
-        row = my_position.row
-        col=my_position.col
-        for direction in directions:
-            row, col = self.get_coordinate_given_direction(direction, row, col)
-
-        sys.stderr.write("row %s and col %s \n" % (str(row),str(col)))
-        sys.stderr.write("Direction %s \n" % str(direction))
-        sys.stderr.flush()
-
         up = 0
         down = 0
         right = 0
@@ -342,20 +380,21 @@ class Board:
 
         while not allFalse:
             allFalse = True
-            if self.is_legal(row + down + 1, col, player_id):
+            if self.is_legal(my_position.row + down + 1, my_position.col, player_id):
                 allFalse = False
                 down += 1
-            if self.is_legal(row, col + right + 1, player_id):
+            if self.is_legal(my_position.row, my_position.col + right + 1, player_id):
                 allFalse = False
                 right += 1
-            if self.is_legal(row - up - 1, col, player_id):
+            if self.is_legal(my_position.row - up - 1, my_position.col, player_id):
                 allFalse = False
                 up += 1
-            if self.is_legal(row, col - left - 1, player_id):
+            if self.is_legal(my_position.row, my_position.col - left - 1, player_id):
                 allFalse = False
                 left += 1
 
         sys.stderr.write('(' + str(up) + "," + str(down) + "," + str(right) + "," + str(left) + ") <-up, down, right, left\n")
+        sys.stderr.write("\n")
         sys.stderr.flush()
         return {'up':up, 'down':down, 'right':right, 'left':left}
 
@@ -409,5 +448,15 @@ class Board:
             col += 1
         elif direction == 'left':
             col += -1
+
+        # if row >= self.height:
+        #     row = self.height-1
+        # elif row < 0:
+        #     row = 0
+        # if col >= self.width:
+        #     col = self.width-1
+        # elif col < 0:
+        #     col = 0
+
 
         return row,col
