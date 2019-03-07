@@ -84,14 +84,19 @@ class Bot:
             sys.stderr.write("Is Trapped?: %s\n" % my_trapped)
             sys.stderr.write("END POS: %s,%s\n" % (str(my_pos.row), str(my_pos.col)))
         sys.stderr.flush()
+        best_next_move={}
         while(my_trapped):
 
+            row, col = self.game.field.get_coordinate_given_direction(value, self.game.my_player().row,self.game.my_player().col)
+            if self.game.field.is_legal(row, col, self.game.my_botid):
+                best_next_move[value] = my_moves
             del direction_moves[value]
+
             if not direction_moves:
                 break
             value = max(direction_moves.keys(), key=(lambda key: direction_moves[key]))
             if direction_moves[value] != 0:
-                my_pos, new_moves, my_trapped, my_future_cell = self.game.field.leak_fix2(self.game.other_botid,
+                my_pos, my_moves, my_trapped, my_future_cell = self.game.field.leak_fix2(self.game.other_botid,
                                                                                             self.game.my_botid,
                                                                                             self.game.players, enemy=None,
                                                                                             future_cell=self.game.field.cell,
@@ -100,13 +105,21 @@ class Bot:
                 my_trapped = True
 
         if not direction_moves:
+
+            value1=value2=0
+            if best_next_move:
+                value1 = max(best_next_move.keys(), key=(lambda key: best_next_move[key]))
+            if backup_move:
+                value2 = max(backup_move.keys(), key=(lambda key: backup_move[key]))
+
+            value = max(value1,value2)
             # All directions are trapped
-
-            sys.stderr.flush()
-            value = max(backup_move.keys(), key=(lambda key: backup_move[key]))
-
-            sys.stderr.write("value if no direction moves %s" %(str(value)))
-            sys.stderr.write("\n")
+            # if best_next_move:
+            #     sys.stderr.write("BEST NEXT MOVE %s\n" % (str(value)))
+            #
+            # if not value:
+            #     sys.stderr.write("value if no BEST NEXT MOVE %s\n" %(str(value)))
+            #     sys.stderr.write("\n")
 
 
 
