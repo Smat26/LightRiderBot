@@ -89,12 +89,13 @@ class Board:
         enemy_id = my_id ^ 1
         return (self.in_bounds(row, col)) and (not BLOCKED in cell[row][col]) and (not enemy_id in cell[row][col])
 
-    def legal_moves2(self, my_id, players,cell):
+    def legal_moves2(self, my_id, players,cell,direction):
         my_player = players[my_id]
+        row,col = self.get_coordinate_given_direction(direction,my_player.row,my_player.col)
         result = []
         for ((o_row, o_col), order) in DIRS:
-            t_row = my_player.row + o_row
-            t_col = my_player.col + o_col
+            t_row = row + o_row
+            t_col = col + o_col
             if self.is_legal2(t_row, t_col, my_id,cell):
                 result.append(((o_row, o_col), order))
             else:

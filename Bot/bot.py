@@ -7,6 +7,8 @@ class Bot:
         self.game = None
         self.killshot = False
         self.directions = []
+        self.trapped_enemy = False
+        self.converse_directions = [('up','down'),('down','up'),('right','left'),('left','right')]
 
     def setup(self, game):
         self.game = game
@@ -17,11 +19,21 @@ class Bot:
         sys.stderr.flush()
 
         # Are we Going for a kill?
-        if self.killshot:
-            self.game.issue_order(self.directions.pop(0))
-            # Target has been eliminated
-            if not self.directions:
-                self.killshot = False
+        if self.killshot and self.directions:
+            next_move = self.directions.pop()
+            row, col = self.game.field.get_coordinate_given_direction(next_move, self.game.my_player().row, self.game.my_player().col)
+            if self.game.field.is_legal(row, col, self.game.my_botid):
+                self.game.issue_order(next_move)
+                # Target has been eliminated
+                if not self.directions:
+                    self.killshot = False
+                    self.trapped_enemy = True
+
+        # Is enemy trapped?
+        if self.trapped_enemy:
+             legal = self.game.field.legal_moves(self.game.my_botid, self.game.players)
+
+            
 
         # Can we go for a Kill?
         enemy, moves, trapped, future_cell = self.game.field.smell_trap(self.game.my_botid, self.game.other_botid, self.game.players, enemy=None, future_cell=self.game.field.cell, moves=0)
@@ -42,7 +54,7 @@ class Bot:
                 self.killshot = True
                 self.directions = directions
                 self.game.issue_order(self.directions.pop(0))
-        
+
         # What are the legal moves we can make?
         legal = self.game.field.legal_moves(self.game.my_botid, self.game.players)
         trapped = []
@@ -61,12 +73,22 @@ class Bot:
             # The map after we made that move:
             updated_cell, is_updated = self.game.field.get_cell_given_direction(self.game.field.cell, direction, self.game.my_player(), self.game.my_botid)
             
+            # for row in updated_cell:
+            #     sys.stderr.write("\n")
+            #     for cel in row:
+            #         sys.stderr.write(str(cel) + ' ')
+            # sys.stderr.write("\n")
+            # sys.stderr.flush()
+
             # What Moves we can make from this move?
             # more_legal = self.game.field.future_legal_moves(self.game.players[self.game.my_botid], updated_cell,self.game.other_botid)
-            more_legal = self.game.field.legal_moves2(my_id=self.game.my_botid, players=self.game.players,cell=updated_cell)
-            sys.stderr.write("Moves after %s are %s\n" % (direction, str(len(more_legal))))
-            for more_moves in more_legal:
-                more_, more_direction = more_moves
+            # more_legal = self.game.field.legal_moves2(my_id=self.game.my_botid, players=self.game.players,cell=updated_cell, direction=[direction])
+            # sys.stderr.write("Moves after %s are %s\n" % (direction, str(len(more_legal))))
+            
+            for more_moves in ['up','down','left','right']:
+                more_direction = more_moves
+                if (more_direction,direction) in self.converse_directions:
+                    continue
                 sys.stderr.write("Direction: %s\n" % more_direction)
                 sys.stderr.flush()
                 direction_moves = self.game.field.calculate_remaining_movable_area(player_id=self.game.my_botid, players=self.game.players, directions= [direction, more_direction])
