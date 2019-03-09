@@ -60,7 +60,8 @@ class Bot:
             if moves_to_reach < moves:
                 self.killshot = True
                 self.directions = directions
-                self.game.issue_order(self.directions.pop(0))
+                self.game.issue_order(self.directions.pop())
+                return
 
         # What are the legal moves we can make?
         legal = self.game.field.legal_moves(self.game.my_botid, self.game.players)
